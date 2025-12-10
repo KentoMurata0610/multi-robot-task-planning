@@ -111,3 +111,16 @@ img, .teaser { display:block; max-width:100%; height:auto; }
 .affiliations.compact{ margin-top:.4rem; padding-left:1.2rem }
 .hidden{ display:none }
 
+
+pre.prompt {
+  max-height: 420px; 
+  overflow: auto;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: .9rem;
+}
+@media (prefers-color-scheme: dark){
+  pre.prompt { background:#0a0f14; border-color:#203040; }
+}
