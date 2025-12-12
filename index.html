@@ -166,6 +166,7 @@
       <a href="#abstract">Abstract</a>
       <a href="#overview">Overview</a>
       <a href="#method">Method</a>
+      <a href="#prompts">Prompts</a>  
       <a href="#experiments">Experiments</a>
       <a href="#resources">Resources</a>
       <a href="#demo">Demo</a>
@@ -219,6 +220,83 @@
       </ul>
     </section>
 
+    <section id="prompts">
+      <h2>Prompts &amp; Configuration Files</h2>
+      <p>
+        This section provides the exact LLM prompts used in our experiments.
+        If you are reviewing the paper and want to inspect the prompts, please start here.
+      </p>
+      <ul>
+        <li>
+          <strong>Task decomposition prompt:</strong>
+          <a href="prompts/Task_Decomposition.txt" target="_blank" rel="noopener">
+            Task_Decomposition.txt
+          </a>
+        </li>
+        <li>
+          <strong>Coalition / allocation prompt:</strong>
+          <a href="prompts/Coalition_Formation.txt" target="_blank" rel="noopener">
+            Coalition_Formation.txt
+          </a>
+        </li>
+        <li>
+          <strong>All prompts &amp; configs (zip):</strong>
+          <a href="prompts/prompts_and_configs.zip" target="_blank" rel="noopener">
+            prompts_and_configs.zip
+          </a>
+          <span class="caption">(contains all prompt templates and configuration files)</span>
+        </li>
+      </ul>
+
+    <details style="margin-top:.8rem">
+      <summary style="cursor:pointer;font-weight:700">
+        Example: Task Decomposition Prompt
+      </summary>
+      <p class="caption">
+        We provide the full prompt as <code>Task_Decomposition.txt</code>. Below we show only the header part.
+      </p>
+      <pre><code>from skills import navigation, object_detection, pick, put
+  
+  List of object_name:
+  [plate, bowl, pitcher_base, banana, apple, orange, cracker_box, pudding_box, chips_bag, coffee, muscat, fruits_juice, pig_doll, sheep_doll, penguin_doll, airplane_toy, car_toy, truck_toy, tooth_paste, towel, cup, treatments, sponge, bath_slipper]
+  
+  
+  def decompose_task(task_description):
+      # GENERAL TASK DECOMPOSITION
+      # Decompose and parallelize subtasks wherever possible.
+      # (full prompt: see prompts/Task_Decomposition.txt)
+      </code></pre>
+    </details>
+
+    <details style="margin-top:.8rem">
+      <summary style="cursor:pointer;font-weight:700">
+        Example: Knowledge-aware Allocation Prompt
+      </summary>
+      <p class="caption">
+        Full version is in <code>Coalition_Formation.txt</code>. We show here the core structure.
+      </p>
+      <pre><code>from skills import navigation, object_detection, pick, put
+  
+  # TASK ALLOCATION
+  # Scenario: There are 2 robots available. The task should be
+  # performed using the minimum number of robots necessary.
+  
+  robots = [
+      {"name":"Robot1", "skills":["navigation","object_detection","pick","put"],
+       "found objects":["car_toy, bath_slipper"]},
+      {"name":"Robot2", "skills":["navigation","object_detection","pick","put"],
+       "found objects":["banana, apple, plate, plate, bowl, coffee"]}
+  ]
+  
+  List of probabilities that an object exists at [living_room, kitchen, bedroom, bathroom]:
+      plate: [0.005, 0.983, 0.007, 0.005]
+      bowl:  [0.005, 0.983, 0.007, 0.005]
+      ...
+  # IMPORTANT: Think step by step and output only the final allocation.
+      </code></pre>
+    </details>
+
+
     <section id="experiments">
       <h2>Experiments</h2>
       <div class="media-grid two">
@@ -245,176 +323,12 @@
     <section id="supplement">
       <h2>Supplement (Beyond the Paper)</h2>
       <ul>
-        <li><strong>Prompt skeletons</strong>: how we embed room-wise probabilities, expose available skills, and request rationales during allocation.</li>
-          <!-- Prompt skeletons: expanded examples -->
-  <details style="margin-top:.8rem">
-    <summary style="cursor:pointer;font-weight:700">
-      Prompt Skeletons (click to expand)
-    </summary>
-
-    <h3 style="margin-top:1rem">1) Task Decomposition Prompt</h3>
-    <p class="caption">
-      Used to infer required items, decompose multi-object instructions into parallelizable subtasks,
-      and output skill-level action sequences.
-    </p>
-    <pre><code>
-from skills import navigation, object_detection, pick, put
-
-List of object_name:
-[plate, bowl, pitcher_base, banana, apple, orange, cracker_box, pudding_box, chips_bag, coffee, muscat, fruits_juice, pig_doll, sheep_doll, penguin_doll, airplane_toy, car_toy, truck_toy, tooth_paste, towel, cup, treatments, sponge, bath_slipper]
-
-
-def decompose_task(task_description):
-    # Task Description: Put an Egg in the Fridge, and place a pot containing Apple slices into the refrigerator.
-
-    # GENERAL TASK DECOMPOSITION 
-    # Decompose and parallelize subtasks where ever possible
-    # Independent subtasks:
-    # SubTask 1: Put an Egg in the Fridge. (Skills Required: GoToObject, PickupObject, OpenObject, PutObject, CloseObject)
-    # SubTask 2: Prepare Apple Slices. (Skills Required: GoToObject, PickupObject, SliceObject, PutObject)
-    # SubTask 3: Place the Pot with Apple Slices in the Fridge. (Skills Required: GoToObject, PickupObject, PutObject, OpenObject, CloseObject)
-    # We can parallelize SubTask 1 and SubTask 2 because they don't depend on each other.
-
-    # CODE
-    def put_egg_in_fridge():
-        # 0: SubTask 1: Put an Egg in the Fridge
-        # 1: Go to the Egg.
-        GoToObject('Egg')
-        # 2: Pick up the Egg.
-        PickupObject('Egg')
-        # 3: go to the Fridge.
-        GoToObject('Fridge')
-        # 4: Open the Fridge.
-        OpenObject('Fridge')
-        # 5: place the Egg inside the Fridge
-        PutObject('Egg', 'Fridge')
-        # 6: Close the Fridge.
-        CloseObject('Fridge')
-
-    def prepare_apple_slices():
-        # 0: SubTask 2: Prepare Apple Slices
-        # 1: Go to the Knife.
-        GoToObject('Knife')
-        # 2: Pick up the Knife.
-        PickupObject('Knife')
-        # 3: Go to the Apple.
-        GoToObject('Apple')
-        # 4: Cut the Apple into slices.
-        SliceObject('Apple')
-        # 5: Go to the diningtable.
-        GoToObject('DiningTable')
-        # 6: Put the Knife on the diningtable.
-        PutObject('Knife', 'DiningTable')
-
-    def place_pot_with_apple_slices():
-        # 0: SubTask 3: Place the Pot with Apple Slices in the Fridge
-        # 1: Go to the Apple slice.
-        GoToObject('Apple')
-        # 2: Pick up a slice of Apple.
-        PickupObject('Apple')
-        # 3: Go to the pot.
-        GoToObject('Pot')
-        # 4: Place the Apple slice in the pot.
-        PutObject('Apple', 'Pot')
-        # 5: Pick up the pot.
-        PickupObject('Pot')
-        # 6: Go to the refrigerator.
-        GoToObject('Fridge')
-        # 7: Open the Fridge, 
-        OpenObject('Fridge')
-        # 8: Put the pot in the refrigerator.
-        PutObject('Pot', 'Fridge')
-        # 9: Close the Fridge.
-        CloseObject('Fridge')
-
-    # Parallelize SubTask 1 and SubTask 2
-    task1_thread = threading.Thread(target=put_egg_in_fridge)
-    task2_thread = threading.Thread(target=prepare_apple_slices)
-
-    # Start executing SubTask 1 and SubTask 2 in parallel
-    task1_thread.start()
-    task2_thread.start()
-
-    # Wait for both SubTask 1 and SubTask 2 to finish
-    task1_thread.join()
-    task2_thread.join()
-
-    # Execute SubTask 3 after SubTask 1 and SubTask 2 are complete
-    place_pot_with_apple_slices()
-
-    # Task Put an Egg in the Fridge, and place a pot containing Apple slices into the refrigerator is done
-    
-# Task Description: 
-    </code></pre>
-
-    <h3 style="margin-top:1.2rem">2) Knowledge-aware Coalition / Allocation Prompt</h3>
-    <p class="caption">
-      Used to allocate decomposed subtasks to robots based on inferred local areas and on-site object–room probabilities.
-    </p>
-    <pre><code>
-from skills import navigation, object_detection, pick, put, put
-           
-           
-# GENERAL TASK DECOMPOSITION
-           
-           
-# TASK ALLOCATION
-# Scenario: There are 2 robots available, The task should be performed using the minimum number of robots necessary. Robots should be assigned to subtasks that match its skills and mass capacity. Using your reasoning come up with a solution to satisfy all contraints.
-
-
-robots = [{"name":"Robot1", "skills": ["navigation", "object_detection", "pick", "put"], "found objects": ["car_toy, bath_slipper"]},
-          {"name":"Robot2", "skills": ["navigation", "object_detection", "pick", "put"], "found objects": ["banana, apple, plate, plate, bowl, coffee"]}]
-
-
-List of probabilities that an object exists at [living_room, kitchen, bedroom, bathroom]:
-    plate: [0.005, 0.983, 0.007, 0.005]
-    bowl: [0.005, 0.983, 0.007, 0.005]
-    pitcher_base: [0.013, 0.954, 0.019, 0.014]
-    banana: [0.005, 0.983, 0.007, 0.005]
-    apple: [0.007, 0.975, 0.01, 0.008]
-    orange: [0.013, 0.954, 0.019, 0.014]
-    cracker_box: [0.977, 0.008, 0.009, 0.007]
-    pudding_box: [0.985, 0.005, 0.006, 0.004]
-    chips_bag: [0.977, 0.008, 0.009, 0.007]
-    coffee: [0.977, 0.008, 0.009, 0.007]
-    muscat: [0.966, 0.011, 0.013, 0.01]
-    fruits_juice: [0.937, 0.021, 0.024, 0.018]
-    pig_doll: [0.006, 0.008, 0.98, 0.007]
-    sheep_doll: [0.011, 0.014, 0.963, 0.012]
-    penguin_doll: [0.006, 0.008, 0.98, 0.007]
-    airplane_toy: [0.006, 0.008, 0.98, 0.007]
-    car_toy: [0.006, 0.008, 0.98, 0.007]
-    truck_toy: [0.006, 0.008, 0.98, 0.007]
-    tooth_paste: [0.005, 0.007, 0.008, 0.98]
-    towel: [0.005, 0.007, 0.008, 0.98]
-    cup: [0.005, 0.007, 0.008, 0.98]
-    treatments: [0.014, 0.018, 0.022, 0.946]
-    sponge: [0.005, 0.007, 0.008, 0.98]
-    bath_slipper: [0.008, 0.01, 0.011, 0.971]
-
-
-# IMPORTANT: The AI should ensure that the robots assigned to the tasks have all the necessary skills to perform the tasks. 
-# IMPORTANT: It infers where each robot is based on "found objects" and assigns subtasks appropriate to the guessed location.
-# IMPORTANT: Determine whether the subtasks must be performed sequentially or in parallel, or a combination of both and allocate robots based on availablitiy. 
-# IMPORTANT: Don't write anything other than the answer.
-# IMPORTANT: Think step by step.
-
-# SOLUTION  EXAMPLE
-Task assignment
-Robot1: Watch TV.
-Robot2: Turn off the desk light.
-Robot3: Turn off the floor light.
-
-Order of action
-1st. Robot2,Robot3
-2nd. Robot1
-
-# SOLUTION
-    </code></pre>
-  </details>
-
-        <li><strong>Failure case</strong>: bag grasp triggered a safety sensor → required recovery. Suggests grasp-pose constraints and collision-aware planning in future iterations.</li>
-        <li><strong>Limitations</strong>: no synchronous cooperation; no dynamic reallocation; homogeneous team assumption. We plan to explore heterogeneous teams and online reallocation.</li>
+        <li>
+          <strong>Prompt skeletons</strong>:
+          see the <a href="#prompts">Prompts &amp; Configuration Files</a> section.
+        </li>
+        <li><strong>Failure case</strong>: ...</li>
+        <li><strong>Limitations</strong>: ...</li>
       </ul>
     </section>
 
