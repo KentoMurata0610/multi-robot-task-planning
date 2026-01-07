@@ -1,47 +1,45 @@
 from skills import navigation, object_detection, pick, put, put
-           
-           
+                      
+
 # GENERAL TASK DECOMPOSITION
-           
-           
+                     
 # TASK ALLOCATION
 # Scenario: There are 2 robots available, The task should be performed using the minimum number of robots necessary. Robots should be assigned to subtasks that match its skills and mass capacity. Using your reasoning come up with a solution to satisfy all contraints.
 
 
-robots = [{"name":"Robot1", "skills": ["navigation", "object_detection", "pick", "put"], "found objects": ["car_toy, bath_slipper"]},
-          {"name":"Robot2", "skills": ["navigation", "object_detection", "pick", "put"], "found objects": ["banana, apple, plate, plate, bowl, coffee"]}]
+robots = [{"name":"Robot1",          
+	　　　"List of probabilities that an object exists":[entrance, dining, living_room, office_room, kitchen]
+　　　　　pitcher_base = [0.136,0.848,0.004,0.006,0.006]
+          bowl = [0.136,0.848,0.004,0.006,0.006]
+          plate = [0.309,0.01,0.662,0.01,0.009]
+          coffee = [0.152,0.006,0.005,0.831,0.006]
+          towel = [0.12,0.006,0.056,0.813,0.006]
+          penguin_doll = [0.271,0.009,0.702,0.009,0.009]
+          sheep_doll = [0.278,0.009,0.694,0.01,0.009]
+          pudding_box = [0.278,0.009,0.694,0.01,0.009]
+          fruits_juice = [0.25,0.009,0.668,0.066,0.008]
+          tooth_paste = [0.328,0.01,0.006,0.011,0.645]
+          apple = [0.248,0.008,0.005,0.009,0.729]
+          orange = [0.2,0.007,0.005,0.008,0.779]
+          muscat = [0.2,0.007,0.005,0.008,0.779]},
 
-
-List of probabilities that an object exists at [living_room, kitchen, bedroom, bathroom]:
-    plate: [0.005, 0.983, 0.007, 0.005]
-    bowl: [0.005, 0.983, 0.007, 0.005]
-    pitcher_base: [0.013, 0.954, 0.019, 0.014]
-    banana: [0.005, 0.983, 0.007, 0.005]
-    apple: [0.007, 0.975, 0.01, 0.008]
-    orange: [0.013, 0.954, 0.019, 0.014]
-    cracker_box: [0.977, 0.008, 0.009, 0.007]
-    pudding_box: [0.985, 0.005, 0.006, 0.004]
-    chips_bag: [0.977, 0.008, 0.009, 0.007]
-    coffee: [0.977, 0.008, 0.009, 0.007]
-    muscat: [0.966, 0.011, 0.013, 0.01]
-    fruits_juice: [0.937, 0.021, 0.024, 0.018]
-    pig_doll: [0.006, 0.008, 0.98, 0.007]
-    sheep_doll: [0.011, 0.014, 0.963, 0.012]
-    penguin_doll: [0.006, 0.008, 0.98, 0.007]
-    airplane_toy: [0.006, 0.008, 0.98, 0.007]
-    car_toy: [0.006, 0.008, 0.98, 0.007]
-    truck_toy: [0.006, 0.008, 0.98, 0.007]
-    tooth_paste: [0.005, 0.007, 0.008, 0.98]
-    towel: [0.005, 0.007, 0.008, 0.98]
-    cup: [0.005, 0.007, 0.008, 0.98]
-    treatments: [0.014, 0.018, 0.022, 0.946]
-    sponge: [0.005, 0.007, 0.008, 0.98]
-    bath_slipper: [0.008, 0.01, 0.011, 0.971]
-
+          {"name":"Robot2",
+           "List of probabilities that an object exists": [front_of_stairs,corridor,bathroom,child_room,parent_room]
+          car_toy = [0.899,0.087,0.004,0.005,0.004]
+          airplane_toy = [0.011,0.223,0.753,0.007,0.006]
+          body_sponge = [0.011,0.223,0.753,0.007,0.006]
+          bath_slipper = [0.011,0.223,0.753,0.007,0.006]
+          truck_toy = [0.012,0.264,0.006,0.711,0.006]
+          pig_doll = [0.012,0.264,0.006,0.711,0.006]
+          cracker_box = [0.012,0.264,0.006,0.711,0.006]
+          chips_bag = [0.012,0.264,0.006,0.711,0.006]
+          cup = [0.011,0.213,0.006,0.007,0.764]
+          banana = [0.01,0.186,0.13,0.007,0.668]
+          treatments = [0.011,0.213,0.006,0.007,0.764]}]
 
 # IMPORTANT: The AI should ensure that the robots assigned to the tasks have all the necessary skills to perform the tasks. 
-# IMPORTANT: It infers where each robot is based on "found objects" and assigns subtasks appropriate to the guessed location.
-# IMPORTANT: Determine whether the subtasks must be performed sequentially or in parallel, or a combination of both and allocate robots based on availablitiy. 
+# IMPORTANT: Subtasks are assigned taking into consideration the objects listed in the "List of probabilities that an object exists" that each robot has.
+# IMPORTANT: Determine whether the subtasks must be performed sequentially or in parallel, or a combination of both and allocate robots based on "List of probabilities that an object exists". 
 # IMPORTANT: Don't write anything other than the answer.
 # IMPORTANT: Think step by step.
 
